@@ -1,0 +1,30 @@
+### Register a new user
+POST http://localhost:3000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "email": "test@lumio.com",
+  "password": "password123"
+}
+
+### Login - correct credentials
+POST http://localhost:3000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@lumio.com",
+  "password": "password123"
+}
+
+### Login - wrong password
+POST http://localhost:3000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@lumio.com",
+  "password": "wrongpassword"
+}
+
+### Get current user (protected route test)
+GET http://localhost:3000/api/v1/users/me
+Authorization: Bearer PASTE_YOUR_TOKEN_HERE
