@@ -27,4 +27,21 @@ Content-Type: application/json
 
 ### Get current user (protected route test)
 GET http://localhost:3000/api/v1/users/me
-Authorization: Bearer PASTE_YOUR_TOKEN_HERE
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MWJhZGIwZS03NDAwLTRmYjctODM0MC1lODQ0MDZmNGQzMTIiLCJpYXQiOjE3ODMyNTg1MjQsImV4cCI6MTc4Mzg2MzMyNH0.WuPo3PYkeAOUGa2aEwXDtyJp3MuuhjR97ogVBMCnPgI
+
+### Create a journal entry
+POST http://localhost:3000/api/v1/entries
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MWJhZGIwZS03NDAwLTRmYjctODM0MC1lODQ0MDZmNGQzMTIiLCJpYXQiOjE3ODMyNTg1MjQsImV4cCI6MTc4Mzg2MzMyNH0.WuPo3PYkeAOUGa2aEwXDtyJp3MuuhjR97ogVBMCnPgI
+Content-Type: application/json
+
+{
+  "content": "Today was really frustrating. My roommate left the kitchen a complete mess again and when I brought it up they got defensive and we ended up arguing about it."
+}
+
+### Get all entries
+GET http://localhost:3000/api/v1/entries
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MWJhZGIwZS03NDAwLTRmYjctODM0MC1lODQ0MDZmNGQzMTIiLCJpYXQiOjE3ODMyNTg1MjQsImV4cCI6MTc4Mzg2MzMyNH0.WuPo3PYkeAOUGa2aEwXDtyJp3MuuhjR97ogVBMCnPgI
+
+### Get single entry (paste the id from the create response)
+GET http://localhost:3000/api/v1/entries/97e4af38-287c-4eb4-bd85-a0a9af0c9ff0
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MWJhZGIwZS03NDAwLTRmYjctODM0MC1lODQ0MDZmNGQzMTIiLCJpYXQiOjE3ODMyNTg1MjQsImV4cCI6MTc4Mzg2MzMyNH0.WuPo3PYkeAOUGa2aEwXDtyJp3MuuhjR97ogVBMCnPgI
