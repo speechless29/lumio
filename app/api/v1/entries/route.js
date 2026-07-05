@@ -2,7 +2,10 @@ import { withAuth } from "../../../../lib/middleware/auth.js";
 import {
   createEntry,
   getEntriesByUser,
+  updateEntryAIFields,
 } from "../../../../lib/db/queries/entries.js";
+import { analyzeMood } from "../../../../lib/ai/aiService.js";
+import { query } from "../../../../lib/db/index.js";
 
 export async function GET(request) {
   return withAuth(request, async (_req, user) => {
@@ -30,6 +33,37 @@ export async function GET(request) {
       },
     });
   });
+}
+
+async function processMoodDetection(entryId, content, relationshipTags) {
+  try {
+    const aiResult = await analyzeMood(entryId, content, relationshipTags);
+
+    const threadResult = await query(
+      `INSERT INTO threads (user_id, journal_entry_id) 
+       SELECT user_id, id FROM journal_entries WHERE id = $1
+       RETURNING id`,
+      [entryId],
+    );
+    const threadId = threadResult.rows[0].id;
+
+    await query(
+      `INSERT INTO messages (thread_id, role, content) VALUES ($1, $2, $3)`,
+      [threadId, "assistant", aiResult.acknowledgment],
+    );
+
+    await updateEntryAIFields(entryId, {
+      mood_score: aiResult.mood_score,
+      mood_label: aiResult.mood_label,
+      mood_intensity: aiResult.mood_intensity,
+      relationship_source: aiResult.relationship_source || null,
+      stressor_type: aiResult.stressor_type || null,
+      ai_acknowledgment: aiResult.acknowledgment,
+      thread_id: threadId,
+    });
+  } catch (error) {
+    console.error(`Mood detection failed for entry ${entryId}:`, error.message);
+  }
 }
 
 export async function POST(request) {
@@ -78,6 +112,7 @@ export async function POST(request) {
       }
 
       const entry = await createEntry(user.id, content);
+      processMoodDetection(entry.id, content, user.relationship_tags);
 
       return Response.json(
         {

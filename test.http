@@ -1,3 +1,4 @@
+@token = eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MWJhZGIwZS03NDAwLTRmYjctODM0MC1lODQ0MDZmNGQzMTIiLCJpYXQiOjE3ODMyNTg1MjQsImV4cCI6MTc4Mzg2MzMyNH0.WuPo3PYkeAOUGa2aEwXDtyJp3MuuhjR97ogVBMCnPgI
 ### Register a new user
 POST http://localhost:3000/api/v1/auth/register
 Content-Type: application/json
@@ -45,3 +46,18 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MWJhZGIwZS03NDAwLTRmY
 ### Get single entry (paste the id from the create response)
 GET http://localhost:3000/api/v1/entries/97e4af38-287c-4eb4-bd85-a0a9af0c9ff0
 Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MWJhZGIwZS03NDAwLTRmYjctODM0MC1lODQ0MDZmNGQzMTIiLCJpYXQiOjE3ODMyNTg1MjQsImV4cCI6MTc4Mzg2MzMyNH0.WuPo3PYkeAOUGa2aEwXDtyJp3MuuhjR97ogVBMCnPgI
+
+
+### Create entry with AI detection
+POST http://localhost:3000/api/v1/entries
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiI4MWJhZGIwZS03NDAwLTRmYjctODM0MC1lODQ0MDZmNGQzMTIiLCJpYXQiOjE3ODMyNTg1MjQsImV4cCI6MTc4Mzg2MzMyNH0.WuPo3PYkeAOUGa2aEwXDtyJp3MuuhjR97ogVBMCnPgI
+Content-Type: application/json
+
+{
+  "content": "Had another argument with my roommate today about the dishes. I feel like I'm always the one who has to bring things up and it never changes. I'm so tired of this dynamic."
+}
+
+
+### Check if AI processed the entry (use id from above response)
+GET http://localhost:3000/api/v1/entries/688d0273-920a-47a1-80e4-54cf544123d1
+Authorization: Bearer {{token}}
