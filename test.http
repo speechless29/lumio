@@ -61,3 +61,15 @@ Content-Type: application/json
 ### Check if AI processed the entry (use id from above response)
 GET http://localhost:3000/api/v1/entries/688d0273-920a-47a1-80e4-54cf544123d1
 Authorization: Bearer {{token}}
+
+### Get trend data points
+GET http://localhost:3000/api/v1/trends
+Authorization: Bearer {{token}}
+
+### Get trend data points - 7 day range
+GET http://localhost:3000/api/v1/trends?range=7d
+Authorization: Bearer {{token}}
+
+### Get active patterns
+GET http://localhost:3000/api/v1/trends/patterns
+Authorization: Bearer {{token}}
