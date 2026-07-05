@@ -1,3 +1,28 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-bg: #0F0F14;
+  --color-surface: #1A1A24;
+  --color-surface-raised: #22222F;
+  --color-accent: #7C6EF5;
+  --color-accent-hover: #6B5DE4;
+  --color-text-primary: #F5F4F0;
+  --color-text-secondary: #9B9AAF;
+  --color-text-muted: #6B6A7E;
+  --color-border: #2A2A3A;
+  --color-success: #4CAF82;
+  --color-error: #E05C5C;
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Lora', serif;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    min-height: 100vh;
+  }
+}
