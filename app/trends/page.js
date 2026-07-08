@@ -13,7 +13,10 @@ export default function TrendsPage() {
   const [range, setRange] = useState("30d");
   const [loading, setLoading] = useState(true);
   const [highlightedEntryIds, setHighlightedEntryIds] = useState([]);
+  const [hovered, setHovered] = useState({});
   const router = useRouter();
+  const setHover = (name, value) =>
+    setHovered((prev) => ({ ...prev, [name]: value }));
 
   useEffect(() => {
     const token = localStorage.getItem("lumio_token");
@@ -129,18 +132,35 @@ export default function TrendsPage() {
               { label: "All time", value: "all" },
             ].map((btn) => {
               const active = range === btn.value;
+              const isHovered = Boolean(hovered[`range-${btn.value}`]);
               return (
                 <button
                   key={btn.value}
                   onClick={() => handleRange(btn.value)}
+                  onMouseEnter={() => setHover(`range-${btn.value}`, true)}
+                  onMouseLeave={() => setHover(`range-${btn.value}`, false)}
                   style={{
                     borderRadius: 8,
                     padding: "8px 16px",
                     fontSize: 13,
                     cursor: "pointer",
-                    backgroundColor: active ? "#7C6EF5" : "#1A1A24",
-                    color: active ? "#FFFFFF" : "#9B9AAF",
-                    border: active ? "none" : "1px solid #2A2A3A",
+                    backgroundColor: active
+                      ? "#7C6EF5"
+                      : isHovered
+                        ? "#232331"
+                        : "#1A1A24",
+                    color: active
+                      ? "#FFFFFF"
+                      : isHovered
+                        ? "#F5F4F0"
+                        : "#9B9AAF",
+                    border: active
+                      ? "none"
+                      : isHovered
+                        ? "1px solid #7C6EF5"
+                        : "1px solid #2A2A3A",
+                    transition:
+                      "background-color 0.2s, border-color 0.2s, color 0.2s",
                   }}
                 >
                   {btn.label}
@@ -193,10 +213,13 @@ export default function TrendsPage() {
 
               <Link
                 href="/journal"
+                onMouseEnter={() => setHover("writeAnotherLink", true)}
+                onMouseLeave={() => setHover("writeAnotherLink", false)}
                 style={{
-                  color: "#7C6EF5",
+                  color: hovered.writeAnotherLink ? "#F5F4F0" : "#7C6EF5",
                   fontSize: 14,
                   textDecoration: "none",
+                  transition: "color 0.2s",
                 }}
               >
                 Write another entry →
@@ -449,13 +472,23 @@ export default function TrendsPage() {
                       JSON.stringify(
                         (highlightedEntryIds || []).slice().sort(),
                       );
+                    const isHovered = Boolean(hovered[`pattern-${pattern.id}`]);
                     return (
                       <div
                         key={pattern.id}
                         onClick={() => toggleHighlight(pattern.entry_ids || [])}
+                        onMouseEnter={() =>
+                          setHover(`pattern-${pattern.id}`, true)
+                        }
+                        onMouseLeave={() =>
+                          setHover(`pattern-${pattern.id}`, false)
+                        }
                         style={{
                           backgroundColor: "#1A1A24",
-                          border: "1px solid #2A2A3A",
+                          border:
+                            isHovered || isActive
+                              ? "1px solid #7C6EF5"
+                              : "1px solid #2A2A3A",
                           borderRadius: 12,
                           padding: 20,
                           marginBottom: 12,
@@ -463,6 +496,8 @@ export default function TrendsPage() {
                           outline: isActive
                             ? "2px solid rgba(124,110,245,0.15)"
                             : "none",
+                          transition:
+                            "border-color 0.2s, background-color 0.2s",
                         }}
                       >
                         <div
@@ -512,9 +547,16 @@ export default function TrendsPage() {
           <div style={{ marginTop: 32, textAlign: "center" }}>
             <Link
               href="/journal"
-              style={{ color: "#7C6EF5", fontSize: 14, textDecoration: "none" }}
+              onMouseEnter={() => setHover("writeTodayLink", true)}
+              onMouseLeave={() => setHover("writeTodayLink", false)}
+              style={{
+                color: hovered.writeTodayLink ? "#F5F4F0" : "#7C6EF5",
+                fontSize: 14,
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
             >
-              Write today's entry →
+              Write today&apos;s entry →
             </Link>
           </div>
         </div>

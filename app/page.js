@@ -1,6 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
 export default function Home() {
+  const [hovered, setHovered] = useState({});
+  const setHover = (name, value) =>
+    setHovered((prev) => ({ ...prev, [name]: value }));
   return (
     <div style={{ backgroundColor: "#0F0F14", minHeight: "100vh" }}>
       {/* Navbar */}
@@ -36,25 +42,31 @@ export default function Home() {
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <Link
               href="/login"
+              onMouseEnter={() => setHover("loginLink", true)}
+              onMouseLeave={() => setHover("loginLink", false)}
               style={{
-                color: "#9B9AAF",
+                color: hovered.loginLink ? "#F5F4F0" : "#9B9AAF",
                 fontSize: "14px",
                 fontWeight: 500,
                 textDecoration: "none",
+                transition: "color 0.2s",
               }}
             >
               Log in
             </Link>
             <Link
               href="/signup"
+              onMouseEnter={() => setHover("signupLink", true)}
+              onMouseLeave={() => setHover("signupLink", false)}
               style={{
-                backgroundColor: "#7C6EF5",
+                backgroundColor: hovered.signupLink ? "#6B5DE4" : "#7C6EF5",
                 color: "white",
                 padding: "8px 20px",
                 borderRadius: "999px",
                 fontSize: "14px",
                 fontWeight: 500,
                 textDecoration: "none",
+                transition: "background-color 0.2s",
               }}
             >
               Start writing
@@ -97,20 +109,23 @@ export default function Home() {
             }}
           >
             It remembers your roommate, your last deadline, your last bad week —
-            and tells you when they're connected.
+            and tells you when they&apos;re connected.
           </p>
           <Link
             href="/signup"
+            onMouseEnter={() => setHover("heroSignupLink", true)}
+            onMouseLeave={() => setHover("heroSignupLink", false)}
             style={{
               display: "inline-flex",
               alignItems: "center",
-              backgroundColor: "#7C6EF5",
+              backgroundColor: hovered.heroSignupLink ? "#6B5DE4" : "#7C6EF5",
               color: "white",
               padding: "14px 36px",
               borderRadius: "999px",
               fontSize: "15px",
               fontWeight: 500,
               textDecoration: "none",
+              transition: "background-color 0.2s",
             }}
           >
             Start writing
@@ -219,10 +234,23 @@ export default function Home() {
           textAlign: "center",
         }}
       >
-        <p style={{ color: "#6B6A7E", fontSize: "13px" }}>
+        <p style={{ color: "#6B6A7E", fontSize: "13px", marginBottom: "8px" }}>
           Your entries are private to your account and never shared with other
           users.
         </p>
+        <Link
+          href="/about"
+          onMouseEnter={() => setHover("aboutLink", true)}
+          onMouseLeave={() => setHover("aboutLink", false)}
+          style={{
+            color: hovered.aboutLink ? "#9B9AAF" : "#6B6A7E",
+            fontSize: "13px",
+            textDecoration: "none",
+            transition: "color 0.2s",
+          }}
+        >
+          About the AI →
+        </Link>
       </footer>
     </div>
   );

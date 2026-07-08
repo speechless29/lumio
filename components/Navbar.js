@@ -1,10 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function Navbar({ activePage }) {
+  const [hovered, setHovered] = useState({});
   const router = useRouter();
+  const setHover = (name, value) =>
+    setHovered((prev) => ({ ...prev, [name]: value }));
 
   const logout = () => {
     localStorage.removeItem("lumio_token");
@@ -48,22 +52,45 @@ export default function Navbar({ activePage }) {
       >
         <Link
           href="/"
+          onMouseEnter={() => setHover("homeLink", true)}
+          onMouseLeave={() => setHover("homeLink", false)}
           style={{
-            color: "#F5F4F0",
+            color: hovered.homeLink ? "#DAD6FF" : "#F5F4F0",
             fontWeight: 600,
             fontSize: 18,
             textDecoration: "none",
+            transition: "color 0.2s",
           }}
         >
           Lumio
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <Link href="/journal" style={linkStyle("journal")}>
+          <Link
+            href="/journal"
+            onMouseEnter={() => setHover("journalLink", true)}
+            onMouseLeave={() => setHover("journalLink", false)}
+            style={{
+              ...linkStyle("journal"),
+              color: hovered.journalLink
+                ? "#F5F4F0"
+                : linkStyle("journal").color,
+              transition: "color 0.2s",
+            }}
+          >
             Journal
           </Link>
 
-          <Link href="/trends" style={linkStyle("trends")}>
+          <Link
+            href="/trends"
+            onMouseEnter={() => setHover("trendsLink", true)}
+            onMouseLeave={() => setHover("trendsLink", false)}
+            style={{
+              ...linkStyle("trends"),
+              color: hovered.trendsLink ? "#F5F4F0" : linkStyle("trends").color,
+              transition: "color 0.2s",
+            }}
+          >
             Trends
           </Link>
 
@@ -72,13 +99,16 @@ export default function Navbar({ activePage }) {
           <button
             type="button"
             onClick={logout}
+            onMouseEnter={() => setHover("logoutButton", true)}
+            onMouseLeave={() => setHover("logoutButton", false)}
             style={{
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: "#6B6A7E",
+              color: hovered.logoutButton ? "#F5F4F0" : "#6B6A7E",
               fontSize: 14,
               fontWeight: 500,
+              transition: "color 0.2s",
             }}
           >
             Log out

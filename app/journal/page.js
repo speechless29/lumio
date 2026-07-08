@@ -12,7 +12,10 @@ export default function JournalPage() {
   const [entriesLoading, setEntriesLoading] = useState(true);
   const [savedEntry, setSavedEntry] = useState(null);
   const [error, setError] = useState("");
+  const [hovered, setHovered] = useState({});
   const router = useRouter();
+  const setHover = (name, value) =>
+    setHovered((prev) => ({ ...prev, [name]: value }));
 
   useEffect(() => {
     const token = localStorage.getItem("lumio_token");
@@ -178,6 +181,8 @@ export default function JournalPage() {
             <button
               onClick={handleSave}
               disabled={content.trim().length < 10 || loading}
+              onMouseEnter={() => setHover("saveButton", true)}
+              onMouseLeave={() => setHover("saveButton", false)}
               style={{
                 borderRadius: 8,
                 padding: "10px 20px",
@@ -189,9 +194,14 @@ export default function JournalPage() {
                     ? "not-allowed"
                     : "pointer",
                 backgroundColor:
-                  content.trim().length < 10 || loading ? "#2A2A3A" : "#7C6EF5",
+                  content.trim().length < 10 || loading
+                    ? "#2A2A3A"
+                    : hovered.saveButton
+                      ? "#6B5DE4"
+                      : "#7C6EF5",
                 color:
                   content.trim().length < 10 || loading ? "#6B6A7E" : "#FFFFFF",
+                transition: "background-color 0.2s",
               }}
             >
               {loading ? "Saving..." : "Save entry"}
@@ -297,51 +307,67 @@ export default function JournalPage() {
             <div style={{ color: "#9B9AAF" }}>Loading entries...</div>
           ) : (
             <div>
-              {entries.map((entry) => (
-                <div
-                  key={entry.id}
-                  style={{
-                    marginBottom: 16,
-                    padding: 20,
-                    backgroundColor: "#1A1A24",
-                    border: "1px solid #2A2A3A",
-                    borderRadius: 12,
-                  }}
-                >
+              {entries.map((entry) => {
+                const isHovered = Boolean(hovered[`entry-${entry.id}`]);
+                return (
                   <div
-                    style={{ fontSize: 12, color: "#6B6A7E", marginBottom: 8 }}
+                    key={entry.id}
+                    onMouseEnter={() => setHover(`entry-${entry.id}`, true)}
+                    onMouseLeave={() => setHover(`entry-${entry.id}`, false)}
+                    style={{
+                      marginBottom: 16,
+                      padding: 20,
+                      backgroundColor: isHovered ? "#1E1E2A" : "#1A1A24",
+                      border: isHovered
+                        ? "1px solid #7C6EF5"
+                        : "1px solid #2A2A3A",
+                      borderRadius: 12,
+                      transition: "border-color 0.2s, background-color 0.2s",
+                    }}
                   >
-                    {new Date(entry.created_at).toLocaleString(undefined, {
-                      weekday: "short",
-                      month: "short",
-                      day: "numeric",
-                    })}
-                  </div>
-                  <div
-                    style={{ fontSize: 14, color: "#9B9AAF", lineHeight: 1.6 }}
-                  >
-                    {entry.content.length > 120
-                      ? `${entry.content.slice(0, 120)}...`
-                      : entry.content}
-                  </div>
-                  {entry.mood_label ? (
                     <div
                       style={{
-                        display: "inline-block",
-                        marginTop: 8,
-                        backgroundColor: "rgba(124,110,245,0.15)",
-                        border: "1px solid #7C6EF5",
-                        borderRadius: 999,
-                        padding: "4px 12px",
                         fontSize: 12,
-                        color: "#7C6EF5",
+                        color: "#6B6A7E",
+                        marginBottom: 8,
                       }}
                     >
-                      {entry.mood_label}
+                      {new Date(entry.created_at).toLocaleString(undefined, {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </div>
-                  ) : null}
-                </div>
-              ))}
+                    <div
+                      style={{
+                        fontSize: 14,
+                        color: "#9B9AAF",
+                        lineHeight: 1.6,
+                      }}
+                    >
+                      {entry.content.length > 120
+                        ? `${entry.content.slice(0, 120)}...`
+                        : entry.content}
+                    </div>
+                    {entry.mood_label ? (
+                      <div
+                        style={{
+                          display: "inline-block",
+                          marginTop: 8,
+                          backgroundColor: "rgba(124,110,245,0.15)",
+                          border: "1px solid #7C6EF5",
+                          borderRadius: 999,
+                          padding: "4px 12px",
+                          fontSize: 12,
+                          color: "#7C6EF5",
+                        }}
+                      >
+                        {entry.mood_label}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

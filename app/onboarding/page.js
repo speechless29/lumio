@@ -17,7 +17,10 @@ export default function OnboardingPage() {
   const [selected, setSelected] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hovered, setHovered] = useState({});
   const router = useRouter();
+  const setHover = (name, value) =>
+    setHovered((prev) => ({ ...prev, [name]: value }));
 
   const toggleOption = (id) => {
     setSelected((current) => {
@@ -135,25 +138,34 @@ export default function OnboardingPage() {
         >
           {options.map((option) => {
             const isSelected = selected.includes(option.id);
+            const isHovered = Boolean(hovered[`option-${option.id}`]);
             return (
               <button
                 key={option.id}
                 type="button"
                 onClick={() => toggleOption(option.id)}
+                onMouseEnter={() => setHover(`option-${option.id}`, true)}
+                onMouseLeave={() => setHover(`option-${option.id}`, false)}
                 style={{
                   padding: 16,
                   borderRadius: 12,
                   cursor: "pointer",
                   border: isSelected
                     ? "1px solid #7C6EF5"
-                    : "1px solid #2A2A3A",
+                    : isHovered
+                      ? "1px solid #7C6EF5"
+                      : "1px solid #2A2A3A",
                   backgroundColor: isSelected
                     ? "rgba(124,110,245,0.15)"
-                    : "#0F0F14",
-                  color: isSelected ? "#F5F4F0" : "#9B9AAF",
+                    : isHovered
+                      ? "#1A1A28"
+                      : "#0F0F14",
+                  color: isSelected || isHovered ? "#F5F4F0" : "#9B9AAF",
                   fontSize: 14,
                   fontWeight: 500,
                   textAlign: "left",
+                  transition:
+                    "background-color 0.2s, border-color 0.2s, color 0.2s",
                 }}
               >
                 {option.label}
@@ -178,11 +190,17 @@ export default function OnboardingPage() {
           type="button"
           onClick={handleContinue}
           disabled={selected.length === 0 || loading}
+          onMouseEnter={() => setHover("continueButton", true)}
+          onMouseLeave={() => setHover("continueButton", false)}
           style={{
             width: "100%",
             marginTop: 24,
             backgroundColor:
-              selected.length === 0 || loading ? "#2A2A3A" : "#7C6EF5",
+              selected.length === 0 || loading
+                ? "#2A2A3A"
+                : hovered.continueButton
+                  ? "#6B5DE4"
+                  : "#7C6EF5",
             color: selected.length === 0 || loading ? "#6B6A7E" : "#FFFFFF",
             borderRadius: 8,
             padding: 12,
@@ -191,6 +209,7 @@ export default function OnboardingPage() {
             border: "none",
             cursor:
               selected.length === 0 || loading ? "not-allowed" : "pointer",
+            transition: "background-color 0.2s",
           }}
         >
           {loading ? "Saving..." : "Continue"}

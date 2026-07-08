@@ -9,7 +9,10 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hovered, setHovered] = useState({});
   const router = useRouter();
+  const setHover = (name, value) =>
+    setHovered((prev) => ({ ...prev, [name]: value }));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -64,12 +67,15 @@ export default function LoginPage() {
         >
           <Link
             href="/"
+            onMouseEnter={() => setHover("homeLink", true)}
+            onMouseLeave={() => setHover("homeLink", false)}
             style={{
-              color: "#7C6EF5",
+              color: hovered.homeLink ? "#F5F4F0" : "#7C6EF5",
               fontSize: 14,
               marginBottom: 32,
               textDecoration: "none",
               display: "inline-block",
+              transition: "color 0.2s",
             }}
           >
             Lumio
@@ -141,9 +147,11 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
+              onMouseEnter={() => setHover("loginButton", true)}
+              onMouseLeave={() => setHover("loginButton", false)}
               style={{
                 width: "100%",
-                backgroundColor: "#7C6EF5",
+                backgroundColor: hovered.loginButton ? "#6B5DE4" : "#7C6EF5",
                 color: "#FFFFFF",
                 borderRadius: 8,
                 padding: 12,
@@ -152,6 +160,7 @@ export default function LoginPage() {
                 marginTop: 20,
                 border: "none",
                 cursor: loading ? "not-allowed" : "pointer",
+                transition: "background-color 0.2s",
               }}
             >
               {loading ? "Logging in..." : "Log in"}
@@ -159,10 +168,16 @@ export default function LoginPage() {
           </form>
 
           <p style={{ marginTop: 24, fontSize: 13, color: "#6B6A7E" }}>
-            Don't have an account?{" "}
+            Don&apos;t have an account?{" "}
             <Link
               href="/signup"
-              style={{ color: "#7C6EF5", textDecoration: "none" }}
+              onMouseEnter={() => setHover("signupLink", true)}
+              onMouseLeave={() => setHover("signupLink", false)}
+              style={{
+                color: hovered.signupLink ? "#F5F4F0" : "#7C6EF5",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
             >
               Start writing
             </Link>

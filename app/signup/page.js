@@ -9,7 +9,10 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hovered, setHovered] = useState({});
   const router = useRouter();
+  const setHover = (name, value) =>
+    setHovered((prev) => ({ ...prev, [name]: value }));
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -66,12 +69,15 @@ export default function SignupPage() {
         >
           <Link
             href="/"
+            onMouseEnter={() => setHover("homeLink", true)}
+            onMouseLeave={() => setHover("homeLink", false)}
             style={{
-              color: "#7C6EF5",
+              color: hovered.homeLink ? "#F5F4F0" : "#7C6EF5",
               fontSize: 14,
               marginBottom: 32,
               textDecoration: "none",
               display: "inline-block",
+              transition: "color 0.2s",
             }}
           >
             Lumio
@@ -149,9 +155,11 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
+              onMouseEnter={() => setHover("createButton", true)}
+              onMouseLeave={() => setHover("createButton", false)}
               style={{
                 width: "100%",
-                backgroundColor: "#7C6EF5",
+                backgroundColor: hovered.createButton ? "#6B5DE4" : "#7C6EF5",
                 color: "#FFFFFF",
                 borderRadius: 8,
                 padding: 12,
@@ -160,6 +168,7 @@ export default function SignupPage() {
                 marginTop: 20,
                 border: "none",
                 cursor: loading ? "not-allowed" : "pointer",
+                transition: "background-color 0.2s",
               }}
             >
               {loading ? "Creating account..." : "Create account"}
@@ -183,16 +192,21 @@ export default function SignupPage() {
 
           <button
             type="button"
+            onMouseEnter={() => setHover("googleButton", true)}
+            onMouseLeave={() => setHover("googleButton", false)}
             style={{
               width: "100%",
-              backgroundColor: "#1A1A24",
-              border: "1px solid #2A2A3A",
+              backgroundColor: hovered.googleButton ? "#232330" : "#1A1A24",
+              border: hovered.googleButton
+                ? "1px solid #7C6EF5"
+                : "1px solid #2A2A3A",
               color: "#F5F4F0",
               borderRadius: 8,
               padding: 12,
               fontSize: 14,
               cursor: "pointer",
               marginTop: 12,
+              transition: "background-color 0.2s, border-color 0.2s",
             }}
           >
             Continue with Google
@@ -208,7 +222,13 @@ export default function SignupPage() {
             Already have an account?{" "}
             <Link
               href="/login"
-              style={{ color: "#7C6EF5", textDecoration: "none" }}
+              onMouseEnter={() => setHover("loginLink", true)}
+              onMouseLeave={() => setHover("loginLink", false)}
+              style={{
+                color: hovered.loginLink ? "#F5F4F0" : "#7C6EF5",
+                textDecoration: "none",
+                transition: "color 0.2s",
+              }}
             >
               Log in
             </Link>
