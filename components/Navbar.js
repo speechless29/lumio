@@ -8,6 +8,7 @@ export default function Navbar({ activePage }) {
 
   const logout = () => {
     localStorage.removeItem("lumio_token");
+    document.cookie = "lumio_token=; path=/; max-age=0";
     router.push("/");
   };
 

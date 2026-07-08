@@ -31,6 +31,7 @@ export default function SignupPage() {
         const token = data.token || data.data?.token;
         if (token) {
           localStorage.setItem("lumio_token", token);
+          document.cookie = `lumio_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Strict`;
         }
         router.push("/onboarding");
       } else {

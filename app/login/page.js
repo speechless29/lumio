@@ -27,7 +27,10 @@ export default function LoginPage() {
 
       if (res.ok && data.success) {
         const token = data.token || data.data?.token;
-        if (token) localStorage.setItem("lumio_token", token);
+        if (token) {
+          localStorage.setItem("lumio_token", token);
+          document.cookie = `lumio_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Strict`;
+        }
         router.push("/journal");
       } else {
         setError(data.error?.message || "Login failed.");
