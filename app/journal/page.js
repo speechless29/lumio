@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Navbar from "../../components/Navbar";
 
 export default function JournalPage() {
   const [content, setContent] = useState("");
@@ -127,59 +128,7 @@ export default function JournalPage() {
 
   return (
     <div style={{ backgroundColor: "#0F0F14", minHeight: "100vh" }}>
-      {/* Navbar */}
-      <nav
-        style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
-          backgroundColor: "rgba(15,15,20,0.92)",
-          borderBottom: "1px solid #2A2A3A",
-          backdropFilter: "blur(12px)",
-          height: "64px",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            maxWidth: "1200px",
-            margin: "0 auto",
-            width: "100%",
-            padding: "0 32px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Link
-            href="/"
-            style={{
-              color: "#F5F4F0",
-              fontWeight: 600,
-              fontSize: "18px",
-              textDecoration: "none",
-            }}
-          >
-            Lumio
-          </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <Link
-              href="/trends"
-              style={{
-                color: "#9B9AAF",
-                fontSize: "14px",
-                fontWeight: 500,
-                textDecoration: "none",
-              }}
-            >
-              Trends
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <Navbar activePage="journal" />
 
       {/* Main */}
       <main style={{ paddingTop: 80 }}>
