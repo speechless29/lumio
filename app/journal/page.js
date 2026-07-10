@@ -309,9 +309,18 @@ export default function JournalPage() {
             <div>
               {entries.map((entry) => {
                 const isHovered = Boolean(hovered[`entry-${entry.id}`]);
+                const isProcessed = entry.ai_processed_at != null;
+                const showAnalyzingLabel =
+                  entry.ai_processed_at == null && entry.mood_label == null;
+
                 return (
                   <div
                     key={entry.id}
+                    onClick={() => {
+                      if (isProcessed) {
+                        router.push(`/chat/${entry.id}`);
+                      }
+                    }}
                     onMouseEnter={() => setHover(`entry-${entry.id}`, true)}
                     onMouseLeave={() => setHover(`entry-${entry.id}`, false)}
                     style={{
@@ -323,6 +332,7 @@ export default function JournalPage() {
                         : "1px solid #2A2A3A",
                       borderRadius: 12,
                       transition: "border-color 0.2s, background-color 0.2s",
+                      cursor: isProcessed ? "pointer" : "default",
                     }}
                   >
                     <div
@@ -363,6 +373,18 @@ export default function JournalPage() {
                         }}
                       >
                         {entry.mood_label}
+                      </div>
+                    ) : null}
+                    {showAnalyzingLabel ? (
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#6B6A7E",
+                          fontStyle: "italic",
+                          marginTop: 4,
+                        }}
+                      >
+                        Analyzing...
                       </div>
                     ) : null}
                   </div>
