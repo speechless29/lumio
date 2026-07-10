@@ -95,6 +95,7 @@ export default function Home() {
               color: "#F5F4F0",
               fontFamily: "var(--font-lora), Georgia, serif",
               marginBottom: "24px",
+              textAlign: "center",
             }}
           >
             Talk it out. Watch the same moments surface again.
@@ -167,7 +168,7 @@ export default function Home() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
               gap: "24px",
             }}
           >
