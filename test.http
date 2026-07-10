@@ -73,3 +73,16 @@ Authorization: Bearer {{token}}
 ### Get active patterns
 GET http://localhost:3000/api/v1/trends/patterns
 Authorization: Bearer {{token}}
+
+### Get thread for an entry (use a real entry id that has been AI processed)
+GET http://localhost:3000/api/v1/entries/ad6542ad-ef74-437e-a565-0b4be0189c0e/thread
+Authorization: Bearer {{token}}
+
+### Send a message in the thread
+POST http://localhost:3000/api/v1/entries/ad6542ad-ef74-437e-a565-0b4be0189c0e/thread/messages
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "content": "I just feel like it never changes no matter how many times I bring it up."
+}

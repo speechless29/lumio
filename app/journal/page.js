@@ -251,15 +251,15 @@ export default function JournalPage() {
                   </div>
 
                   <button
+                    onClick={() => router.push(`/chat/${savedEntry.id}`)}
                     style={{
                       marginTop: 16,
-                      color: "#6B6A7E",
+                      color: "#7C6EF5",
                       fontSize: 13,
                       background: "none",
                       border: "none",
-                      cursor: "not-allowed",
+                      cursor: "pointer",
                     }}
-                    disabled
                   >
                     Keep talking about this →
                   </button>
