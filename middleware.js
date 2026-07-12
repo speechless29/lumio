@@ -4,7 +4,7 @@ export function middleware(request) {
   const token = request.cookies.get("lumio_token")?.value;
   const { pathname } = request.nextUrl;
 
-  const protectedRoutes = ["/journal", "/trends", "/onboarding"];
+  const protectedRoutes = ["/journal", "/trends", "/onboarding", "/reflect"];
   const isProtected = protectedRoutes.some((route) =>
     pathname.startsWith(route),
   );
@@ -17,5 +17,10 @@ export function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/journal/:path*", "/trends/:path*", "/onboarding/:path*"],
+  matcher: [
+    "/journal/:path*",
+    "/trends/:path*",
+    "/onboarding/:path*",
+    "/reflect/:path*",
+  ],
 };

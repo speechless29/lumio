@@ -161,7 +161,7 @@ export default function JournalPage() {
                 color: "#F5F4F0",
                 fontSize: 16,
                 lineHeight: 1.8,
-                fontFamily: "Georgia, serif",
+                fontFamily: "var(--font-lora), 'Be Vietnam Pro', sans-serif",
               }}
             />
           </div>

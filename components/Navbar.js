@@ -52,10 +52,10 @@ export default function Navbar({ activePage }) {
       >
         <Link
           href="/"
-          onMouseEnter={() => setHover("homeLink", true)}
-          onMouseLeave={() => setHover("homeLink", false)}
+          onMouseEnter={() => setHover("home", true)}
+          onMouseLeave={() => setHover("home", false)}
           style={{
-            color: hovered.homeLink ? "#DAD6FF" : "#F5F4F0",
+            color: hovered.home ? "#DAD6FF" : "#F5F4F0",
             fontWeight: 600,
             fontSize: 18,
             textDecoration: "none",
@@ -68,13 +68,11 @@ export default function Navbar({ activePage }) {
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <Link
             href="/journal"
-            onMouseEnter={() => setHover("journalLink", true)}
-            onMouseLeave={() => setHover("journalLink", false)}
+            onMouseEnter={() => setHover("journal", true)}
+            onMouseLeave={() => setHover("journal", false)}
             style={{
               ...linkStyle("journal"),
-              color: hovered.journalLink
-                ? "#F5F4F0"
-                : linkStyle("journal").color,
+              color: hovered.journal ? "#F5F4F0" : linkStyle("journal").color,
               transition: "color 0.2s",
             }}
           >
@@ -83,15 +81,28 @@ export default function Navbar({ activePage }) {
 
           <Link
             href="/trends"
-            onMouseEnter={() => setHover("trendsLink", true)}
-            onMouseLeave={() => setHover("trendsLink", false)}
+            onMouseEnter={() => setHover("trends", true)}
+            onMouseLeave={() => setHover("trends", false)}
             style={{
               ...linkStyle("trends"),
-              color: hovered.trendsLink ? "#F5F4F0" : linkStyle("trends").color,
+              color: hovered.trends ? "#F5F4F0" : linkStyle("trends").color,
               transition: "color 0.2s",
             }}
           >
             Trends
+          </Link>
+
+          <Link
+            href="/reflect"
+            onMouseEnter={() => setHover("reflect", true)}
+            onMouseLeave={() => setHover("reflect", false)}
+            style={{
+              ...linkStyle("reflect"),
+              color: hovered.reflect ? "#F5F4F0" : linkStyle("reflect").color,
+              transition: "color 0.2s",
+            }}
+          >
+            Reflect
           </Link>
 
           <div style={{ width: 1, height: 16, backgroundColor: "#2A2A3A" }} />
@@ -99,13 +110,13 @@ export default function Navbar({ activePage }) {
           <button
             type="button"
             onClick={logout}
-            onMouseEnter={() => setHover("logoutButton", true)}
-            onMouseLeave={() => setHover("logoutButton", false)}
+            onMouseEnter={() => setHover("logout", true)}
+            onMouseLeave={() => setHover("logout", false)}
             style={{
               background: "none",
               border: "none",
               cursor: "pointer",
-              color: hovered.logoutButton ? "#F5F4F0" : "#6B6A7E",
+              color: hovered.logout ? "#F5F4F0" : "#6B6A7E",
               fontSize: 14,
               fontWeight: 500,
               transition: "color 0.2s",

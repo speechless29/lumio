@@ -323,6 +323,8 @@ export default function ChatPage() {
                       style={{
                         fontSize: 15,
                         color: "#F5F4F0",
+                        fontFamily: "Inter, sans-serif",
+                        fontWeight: 400,
                         lineHeight: 1.7,
                         borderLeft: "2px solid #7C6EF5",
                         paddingLeft: 16,
@@ -339,35 +341,41 @@ export default function ChatPage() {
                   key={message.id || message.created_at}
                   style={{
                     marginBottom: 24,
-                    textAlign: "right",
+                    display: "flex",
+                    justifyContent: "flex-end",
                   }}
                 >
-                  <div
-                    style={{
-                      fontSize: 11,
-                      color: "#6B6A7E",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
-                      marginBottom: 6,
-                      textAlign: "right",
-                    }}
-                  >
-                    You
-                  </div>
-                  <div
-                    style={{
-                      display: "inline-block",
-                      backgroundColor: "#1A1A24",
-                      border: "1px solid #2A2A3A",
-                      borderRadius: "16px 16px 4px 16px",
-                      padding: "10px 16px",
-                      fontSize: 14,
-                      color: "#F5F4F0",
-                      maxWidth: "70%",
-                      whiteSpace: "pre-wrap",
-                    }}
-                  >
-                    {message.content}
+                  <div style={{ maxWidth: "70%" }}>
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6B6A7E",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        marginBottom: 6,
+                        textAlign: "right",
+                      }}
+                    >
+                      You
+                    </div>
+                    <div
+                      style={{
+                        display: "inline-block",
+                        backgroundColor: "#1A1A24",
+                        border: "1px solid #2A2A3A",
+                        borderRadius: "16px 16px 4px 16px",
+                        padding: "10px 16px",
+                        fontSize: 14,
+                        color: "#F5F4F0",
+                        fontFamily: "Inter, sans-serif",
+                        fontWeight: 400,
+                        lineHeight: 1.6,
+                        maxWidth: "100%",
+                        whiteSpace: "pre-wrap",
+                      }}
+                    >
+                      {message.content}
+                    </div>
                   </div>
                 </div>
               );

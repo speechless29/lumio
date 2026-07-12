@@ -103,6 +103,69 @@ export default function TrendsPage() {
     });
   }
 
+  const normalizeDateKey = (value) => {
+    const date = new Date(value);
+    date.setHours(0, 0, 0, 0);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const entryDateKeys = new Set(
+    dataPoints.map((dp) => normalizeDateKey(dp.created_at)),
+  );
+  let currentStreak = 0;
+  let dayOffset = 0;
+
+  while (dayOffset < 365) {
+    const checkDate = new Date(today);
+    checkDate.setDate(today.getDate() - dayOffset);
+    const hasEntry = entryDateKeys.has(normalizeDateKey(checkDate));
+
+    if (hasEntry) {
+      currentStreak += 1;
+      dayOffset += 1;
+    } else if (dayOffset === 0) {
+      dayOffset = 1;
+    } else {
+      break;
+    }
+  }
+
+  const chartWidth = 400;
+  const chartHeight = 140;
+  const paddingX = 20;
+  const paddingY = 10;
+
+  const points =
+    dataPoints.length > 0
+      ? dataPoints.map((dp, index) => {
+          const x =
+            dataPoints.length === 1
+              ? chartWidth / 2
+              : paddingX +
+                (index / (dataPoints.length - 1)) * (chartWidth - paddingX * 2);
+          const y =
+            paddingY +
+            (1 - (dp.mood_score - 1) / 9) * (chartHeight - paddingY * 2);
+          return { x, y, dp };
+        })
+      : [];
+
+  const linePath = points
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+    .join(" ");
+  const linePathPoints = points
+    .map((point) => `${point.x} ${point.y}`)
+    .join(" L ");
+  const areaPath =
+    points.length > 0
+      ? `M ${points[0].x} ${chartHeight} L ${linePathPoints} L ${points[points.length - 1].x} ${chartHeight} Z`
+      : "";
+
   return (
     <div style={{ backgroundColor: "#0F0F14", minHeight: "100vh" }}>
       <Navbar activePage="trends" />
@@ -258,11 +321,11 @@ export default function TrendsPage() {
                         marginBottom: 4,
                       }}
                     >
-                      Average mood
+                      Average Mood
                     </div>
                     <div
                       style={{
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: 700,
                         color: "#F5F4F0",
                       }}
@@ -279,8 +342,7 @@ export default function TrendsPage() {
                       border: "1px solid #2A2A3A",
                       borderRadius: 12,
                       padding: "16px 20px",
-                      width: 160,
-                      textAlign: "left",
+                      flex: 1,
                     }}
                   >
                     <div
@@ -292,11 +354,11 @@ export default function TrendsPage() {
                         marginBottom: 4,
                       }}
                     >
-                      Entries tracked
+                      Entries
                     </div>
                     <div
                       style={{
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: 700,
                         color: "#F5F4F0",
                       }}
@@ -304,58 +366,83 @@ export default function TrendsPage() {
                       {dataPoints?.length ?? 0}
                     </div>
                   </div>
+
+                  <div
+                    style={{
+                      backgroundColor: "#1A1A24",
+                      border: "1px solid #2A2A3A",
+                      borderRadius: 12,
+                      padding: "16px 20px",
+                      flex: 1,
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6B6A7E",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.1em",
+                        marginBottom: 4,
+                      }}
+                    >
+                      Streak
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 22,
+                        fontWeight: 700,
+                        color: "#F5F4F0",
+                      }}
+                    >
+                      {currentStreak === 1 ? "1 day" : `${currentStreak} days`}
+                    </div>
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    height: 220,
-                    display: "flex",
-                    alignItems: "flex-end",
-                    gap: 8,
-                    position: "relative",
-                  }}
+                <svg
+                  width="100%"
+                  height={200}
+                  viewBox="0 0 400 160"
+                  preserveAspectRatio="none"
                 >
-                  {bars.length === 0 ? (
-                    <div style={{ color: "#9B9AAF" }}>No data points</div>
-                  ) : (
-                    bars.map((dp) => {
-                      const isHighlighted = highlightedEntryIds.includes(dp.id);
-                      const opacity =
-                        highlightedEntryIds.length === 0
+                  <path d={areaPath} fill="#7C6EF5" fillOpacity="0.12" />
+                  <path
+                    d={linePath}
+                    stroke="#7C6EF5"
+                    strokeWidth="2"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  {points.map((point, index) => {
+                    const dp = dataPoints[index];
+                    const isHighlighted = highlightedEntryIds.includes(dp.id);
+                    const opacity =
+                      highlightedEntryIds.length === 0
+                        ? 1
+                        : isHighlighted
                           ? 1
-                          : isHighlighted
-                            ? 1
-                            : 0.4;
-                      const h = (dp.mood_score ?? 0) / 10;
-                      const heightStyle = `${Math.max(h * 100, 4)}%`;
-                      const bg = getBarColor(dp.mood_score);
-                      return (
-                        <div
-                          key={dp.id}
-                          title={`${dp.mood_label || "Unknown"} · ${new Date(
-                            dp.created_at,
-                          ).toLocaleDateString()}`}
-                          style={{
-                            flex: 1,
-                            minHeight: 4,
-                            height: heightStyle,
-                            borderRadius: "4px 4px 0 0",
-                            backgroundColor: bg,
-                            opacity,
-                            transition: "opacity 0.15s, height 0.2s",
-                          }}
-                        />
-                      );
-                    })
-                  )}
-                </div>
+                          : 0.4;
+                    return (
+                      <circle
+                        key={dp.id}
+                        cx={point.x}
+                        cy={point.y}
+                        r="4"
+                        fill={getBarColor(dp.mood_score)}
+                        stroke="#0F0F14"
+                        strokeWidth="2"
+                        opacity={opacity}
+                      />
+                    );
+                  })}
+                </svg>
 
-                {/* Date labels */}
                 <div
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
-                    marginTop: 12,
+                    marginTop: 8,
                   }}
                 >
                   <div style={{ fontSize: 11, color: "#6B6A7E" }}>
@@ -372,7 +459,6 @@ export default function TrendsPage() {
                   </div>
                 </div>
 
-                {/* Legend */}
                 <div
                   style={{
                     display: "flex",
