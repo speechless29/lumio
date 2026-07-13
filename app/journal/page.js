@@ -428,6 +428,30 @@ export default function JournalPage() {
             </div>
           )}
         </div>
+        <div
+          style={{
+            maxWidth: 680,
+            margin: "0 auto",
+            padding: "0 24px 32px",
+            textAlign: "center",
+          }}
+        >
+          <p
+            style={{
+              fontSize: 12,
+              color: "#6B6A7E",
+              lineHeight: 1.8,
+            }}
+          >
+            Lumio is not a substitute for professional mental health support.{" "}
+            <br />
+            🇻🇳 Vietnam:{" "}
+            <strong style={{ color: "#9B9AAF" }}>1800 599 920</strong> (miễn
+            phí, 24/7){" · "}
+            🌏 International:{" "}
+            <strong style={{ color: "#9B9AAF" }}>findahelpline.com</strong>
+          </p>
+        </div>
       </main>
     </div>
   );
