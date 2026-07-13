@@ -4,6 +4,54 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
+function LumioLogo() {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+        <path
+          d="M14 3 L25 22 L14 18 L3 22 Z"
+          stroke="#7C6EF5"
+          strokeWidth="1.6"
+          strokeLinejoin="round"
+          fill="rgba(124,110,245,0.08)"
+        />
+        <path
+          d="M14 3 L14 18"
+          stroke="#7C6EF5"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          opacity="0.5"
+        />
+        <path
+          d="M14 18 L25 22"
+          stroke="#7C6EF5"
+          strokeWidth="1"
+          strokeLinecap="round"
+          opacity="0.3"
+        />
+        <path
+          d="M14 18 L3 22"
+          stroke="#7C6EF5"
+          strokeWidth="1"
+          strokeLinecap="round"
+          opacity="0.3"
+        />
+      </svg>
+      <span
+        style={{
+          color: "#F5F4F0",
+          fontSize: 18,
+          fontWeight: 600,
+          fontFamily: "Inter, sans-serif",
+          letterSpacing: "-0.5px",
+        }}
+      >
+        Lumio
+      </span>
+    </div>
+  );
+}
+
 export default function Navbar({ activePage }) {
   const [hovered, setHovered] = useState({});
   const router = useRouter();
@@ -50,19 +98,8 @@ export default function Navbar({ activePage }) {
           justifyContent: "space-between",
         }}
       >
-        <Link
-          href="/"
-          onMouseEnter={() => setHover("home", true)}
-          onMouseLeave={() => setHover("home", false)}
-          style={{
-            color: hovered.home ? "#DAD6FF" : "#F5F4F0",
-            fontWeight: 600,
-            fontSize: 18,
-            textDecoration: "none",
-            transition: "color 0.2s",
-          }}
-        >
-          Lumio
+        <Link href="/" style={{ textDecoration: "none" }}>
+          <LumioLogo />
         </Link>
 
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>

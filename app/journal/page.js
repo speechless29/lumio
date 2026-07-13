@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Navbar from "../../components/Navbar";
 
 export default function JournalPage() {
@@ -13,6 +12,7 @@ export default function JournalPage() {
   const [savedEntry, setSavedEntry] = useState(null);
   const [error, setError] = useState("");
   const [hovered, setHovered] = useState({});
+  const [showCheckin, setShowCheckin] = useState(false);
   const router = useRouter();
   const setHover = (name, value) =>
     setHovered((prev) => ({ ...prev, [name]: value }));
@@ -33,7 +33,18 @@ export default function JournalPage() {
         });
         const json = await res.json();
         if (mounted) {
-          setEntries(json?.data?.entries ?? []);
+          const loadedEntries = json?.data?.entries ?? [];
+          setEntries(loadedEntries);
+
+          if (loadedEntries.length > 0) {
+            const lastEntry = loadedEntries[0];
+            const lastEntryDate = new Date(lastEntry.created_at);
+            const now = new Date();
+            const hoursSince = (now - lastEntryDate) / (1000 * 60 * 60);
+            if (hoursSince >= 24) {
+              setShowCheckin(Math.floor(hoursSince / 24));
+            }
+          }
         }
       } catch (err) {
         console.error("Failed to load entries", err);
@@ -76,7 +87,6 @@ export default function JournalPage() {
       }
     }, 2000);
 
-    // safety: clear after timeout as well
     setTimeout(() => clearInterval(interval), maxAttempts * 2000 + 2000);
   };
 
@@ -111,7 +121,7 @@ export default function JournalPage() {
         setEntries((prev) => [entry, ...prev]);
         setContent("");
         setError("");
-        // start polling for AI processing
+        setShowCheckin(false);
         pollForAI(entry.id);
       } else {
         setError(json.error?.message || "Failed to save entry.");
@@ -133,38 +143,71 @@ export default function JournalPage() {
     <div style={{ backgroundColor: "#0F0F14", minHeight: "100vh" }}>
       <Navbar activePage="journal" />
 
-      {/* Main */}
       <main style={{ paddingTop: 80 }}>
-        <div
-          style={{
-            maxWidth: 680,
-            margin: "0 auto",
-            padding: "40px 24px",
-          }}
-        >
+        <div style={{ maxWidth: 680, margin: "0 auto", padding: "40px 24px" }}>
           <div style={{ marginBottom: 16, fontSize: 13, color: "#6B6A7E" }}>
             {today}
           </div>
 
-          <div>
-            <textarea
-              placeholder="What's on your mind today?"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+          {showCheckin ? (
+            <div
               style={{
-                width: "100%",
-                minHeight: 200,
-                backgroundColor: "transparent",
-                border: "none",
-                outline: "none",
-                resize: "none",
-                color: "#F5F4F0",
-                fontSize: 16,
-                lineHeight: 1.8,
-                fontFamily: "var(--font-lora), 'Be Vietnam Pro', sans-serif",
+                backgroundColor: "#1A1A24",
+                border: "1px solid #2A2A3A",
+                borderRadius: 10,
+                padding: "14px 16px",
+                marginBottom: 16,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
               }}
-            />
-          </div>
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 16, color: "#7C6EF5" }}>✦</span>
+                <div>
+                  <div style={{ fontSize: 13, color: "#F5F4F0" }}>
+                    You haven't written in{" "}
+                    {showCheckin === 1 ? "a day" : `${showCheckin} days`}.
+                  </div>
+                  <div style={{ fontSize: 12, color: "#9B9AAF", marginTop: 2 }}>
+                    Start below when you're ready.
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowCheckin(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#6B6A7E",
+                  fontSize: 20,
+                  cursor: "pointer",
+                  lineHeight: 1,
+                  padding: "0 4px",
+                }}
+              >
+                ×
+              </button>
+            </div>
+          ) : null}
+
+          <textarea
+            placeholder="What's on your mind today?"
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            style={{
+              width: "100%",
+              minHeight: 200,
+              backgroundColor: "transparent",
+              border: "none",
+              outline: "none",
+              resize: "none",
+              color: "#F5F4F0",
+              fontSize: 16,
+              lineHeight: 1.8,
+              fontFamily: "var(--font-lora), 'Be Vietnam Pro', sans-serif",
+            }}
+          />
 
           <div
             style={{
@@ -177,7 +220,6 @@ export default function JournalPage() {
             <div style={{ color: "#6B6A7E", fontSize: 12 }}>
               {content.length}/10000
             </div>
-
             <button
               onClick={handleSave}
               disabled={content.trim().length < 10 || loading}
@@ -214,7 +256,6 @@ export default function JournalPage() {
             </div>
           ) : null}
 
-          {/* AI Acknowledgment Card */}
           {savedEntry ? (
             <div
               style={{
@@ -243,13 +284,11 @@ export default function JournalPage() {
                       {savedEntry.mood_label} · {savedEntry.mood_intensity}
                     </div>
                   ) : null}
-
                   <div
                     style={{ color: "#9B9AAF", fontSize: 14, lineHeight: 1.7 }}
                   >
                     {savedEntry.ai_acknowledgment}
                   </div>
-
                   <button
                     onClick={() => router.push(`/chat/${savedEntry.id}`)}
                     style={{
@@ -278,7 +317,6 @@ export default function JournalPage() {
             </div>
           ) : null}
 
-          {/* Divider */}
           <div
             style={{
               marginTop: 48,
@@ -302,7 +340,6 @@ export default function JournalPage() {
             <div style={{ flex: 1, height: 1, backgroundColor: "#2A2A3A" }} />
           </div>
 
-          {/* Entries list */}
           {entriesLoading ? (
             <div style={{ color: "#9B9AAF" }}>Loading entries...</div>
           ) : (
@@ -317,9 +354,7 @@ export default function JournalPage() {
                   <div
                     key={entry.id}
                     onClick={() => {
-                      if (isProcessed) {
-                        router.push(`/chat/${entry.id}`);
-                      }
+                      if (isProcessed) router.push(`/chat/${entry.id}`);
                     }}
                     onMouseEnter={() => setHover(`entry-${entry.id}`, true)}
                     onMouseLeave={() => setHover(`entry-${entry.id}`, false)}

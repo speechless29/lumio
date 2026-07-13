@@ -36,9 +36,49 @@ export default function Home() {
             justifyContent: "space-between",
           }}
         >
-          <span style={{ color: "#F5F4F0", fontWeight: 600, fontSize: "18px" }}>
-            Lumio
-          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+              <path
+                d="M14 3 L25 22 L14 18 L3 22 Z"
+                stroke="#7C6EF5"
+                strokeWidth="1.6"
+                strokeLinejoin="round"
+                fill="rgba(124,110,245,0.08)"
+              />
+              <path
+                d="M14 3 L14 18"
+                stroke="#7C6EF5"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                opacity="0.5"
+              />
+              <path
+                d="M14 18 L25 22"
+                stroke="#7C6EF5"
+                strokeWidth="1"
+                strokeLinecap="round"
+                opacity="0.3"
+              />
+              <path
+                d="M14 18 L3 22"
+                stroke="#7C6EF5"
+                strokeWidth="1"
+                strokeLinecap="round"
+                opacity="0.3"
+              />
+            </svg>
+            <span
+              style={{
+                color: "#F5F4F0",
+                fontWeight: 600,
+                fontSize: "18px",
+                fontFamily: "Inter, sans-serif",
+                letterSpacing: "-0.5px",
+              }}
+            >
+              Lumio
+            </span>
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <Link
               href="/login"
