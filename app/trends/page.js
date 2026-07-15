@@ -6,6 +6,7 @@ import Link from "next/link";
 import Navbar from "../../components/Navbar";
 
 export default function TrendsPage() {
+  const [tooltip, setTooltip] = useState(null);
   const [dataPoints, setDataPoints] = useState([]);
   const [patterns, setPatterns] = useState([]);
   const [totalEntries, setTotalEntries] = useState(0);
@@ -32,9 +33,7 @@ export default function TrendsPage() {
       try {
         const trendsRes = await fetch(
           `/api/v1/trends?range=${encodeURIComponent(range)}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
+          { headers: { Authorization: `Bearer ${token}` } },
         );
         const trendsJson = await trendsRes.json();
         if (mounted) {
@@ -59,7 +58,6 @@ export default function TrendsPage() {
     };
 
     fetchTrends();
-
     return () => {
       mounted = false;
     };
@@ -68,10 +66,10 @@ export default function TrendsPage() {
   const handleRange = (r) => {
     setRange(r);
     setHighlightedEntryIds([]);
+    setTooltip(null);
   };
 
   const toggleHighlight = (entryIds = []) => {
-    // toggle: if same array (stringified) -> clear, else set
     const currentKey = JSON.stringify(highlightedEntryIds.slice().sort());
     const newKey = JSON.stringify((entryIds || []).slice().sort());
     if (currentKey === newKey) {
@@ -81,8 +79,6 @@ export default function TrendsPage() {
     }
   };
 
-  const bars = dataPoints || [];
-  const percentWidth = (val) => `${Math.max((val / 10) * 100, 4)}%`;
   const averageMood =
     dataPoints.length > 0
       ? dataPoints.reduce((sum, dp) => sum + (dp.mood_score || 0), 0) /
@@ -119,12 +115,10 @@ export default function TrendsPage() {
   );
   let currentStreak = 0;
   let dayOffset = 0;
-
   while (dayOffset < 365) {
     const checkDate = new Date(today);
     checkDate.setDate(today.getDate() - dayOffset);
     const hasEntry = entryDateKeys.has(normalizeDateKey(checkDate));
-
     if (hasEntry) {
       currentStreak += 1;
       dayOffset += 1;
@@ -156,11 +150,9 @@ export default function TrendsPage() {
       : [];
 
   const linePath = points
-    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
     .join(" ");
-  const linePathPoints = points
-    .map((point) => `${point.x} ${point.y}`)
-    .join(" L ");
+  const linePathPoints = points.map((p) => `${p.x} ${p.y}`).join(" L ");
   const areaPath =
     points.length > 0
       ? `M ${points[0].x} ${chartHeight} L ${linePathPoints} L ${points[points.length - 1].x} ${chartHeight} Z`
@@ -170,7 +162,6 @@ export default function TrendsPage() {
     <div style={{ backgroundColor: "#0F0F14", minHeight: "100vh" }}>
       <Navbar activePage="trends" />
 
-      {/* Main */}
       <main style={{ paddingTop: 80 }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "40px 24px" }}>
           <h1
@@ -195,7 +186,7 @@ export default function TrendsPage() {
               { label: "All time", value: "all" },
             ].map((btn) => {
               const active = range === btn.value;
-              const isHovered = Boolean(hovered[`range-${btn.value}`]);
+              const isHov = Boolean(hovered[`range-${btn.value}`]);
               return (
                 <button
                   key={btn.value}
@@ -209,17 +200,13 @@ export default function TrendsPage() {
                     cursor: "pointer",
                     backgroundColor: active
                       ? "#7C6EF5"
-                      : isHovered
+                      : isHov
                         ? "#232331"
                         : "#1A1A24",
-                    color: active
-                      ? "#FFFFFF"
-                      : isHovered
-                        ? "#F5F4F0"
-                        : "#9B9AAF",
+                    color: active ? "#FFFFFF" : isHov ? "#F5F4F0" : "#9B9AAF",
                     border: active
                       ? "none"
-                      : isHovered
+                      : isHov
                         ? "1px solid #7C6EF5"
                         : "1px solid #2A2A3A",
                     transition:
@@ -235,7 +222,6 @@ export default function TrendsPage() {
           {loading ? (
             <div style={{ color: "#9B9AAF" }}>Loading...</div>
           ) : !hasEnoughData ? (
-            /* Empty state */
             <div
               style={{
                 backgroundColor: "#1A1A24",
@@ -251,7 +237,6 @@ export default function TrendsPage() {
               <div style={{ color: "#6B6A7E", fontSize: 13, marginBottom: 24 }}>
                 {totalEntries} of 5 entries to your first insight
               </div>
-
               <div
                 style={{
                   width: "100%",
@@ -265,7 +250,6 @@ export default function TrendsPage() {
                 <div
                   style={{
                     width: `${Math.min((totalEntries / 5) * 100, 100)}%`,
-                    maxWidth: "100%",
                     height: 4,
                     backgroundColor: "#7C6EF5",
                     borderRadius: 999,
@@ -273,7 +257,6 @@ export default function TrendsPage() {
                   }}
                 />
               </div>
-
               <Link
                 href="/journal"
                 onMouseEnter={() => setHover("writeAnotherLink", true)}
@@ -289,7 +272,6 @@ export default function TrendsPage() {
               </Link>
             </div>
           ) : (
-            /* Chart + patterns */
             <>
               {/* Chart */}
               <div
@@ -299,106 +281,58 @@ export default function TrendsPage() {
                   borderRadius: 12,
                   padding: 24,
                   marginBottom: 24,
+                  position: "relative",
                 }}
               >
                 {/* Stats row */}
                 <div style={{ display: "flex", gap: 24, marginBottom: 24 }}>
-                  <div
-                    style={{
-                      backgroundColor: "#1A1A24",
-                      border: "1px solid #2A2A3A",
-                      borderRadius: 12,
-                      padding: "16px 20px",
-                      flex: 1,
-                    }}
-                  >
+                  {[
+                    {
+                      label: "Average Mood",
+                      value: `${averageMood.toFixed(1)}/10`,
+                    },
+                    { label: "Entries", value: dataPoints.length },
+                    {
+                      label: "Streak",
+                      value:
+                        currentStreak === 1 ? "1 day" : `${currentStreak} days`,
+                    },
+                  ].map((stat) => (
                     <div
+                      key={stat.label}
                       style={{
-                        fontSize: 11,
-                        color: "#6B6A7E",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        marginBottom: 4,
+                        backgroundColor: "#1A1A24",
+                        border: "1px solid #2A2A3A",
+                        borderRadius: 12,
+                        padding: "16px 20px",
+                        flex: 1,
                       }}
                     >
-                      Average Mood
+                      <div
+                        style={{
+                          fontSize: 11,
+                          color: "#6B6A7E",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.1em",
+                          marginBottom: 4,
+                        }}
+                      >
+                        {stat.label}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 22,
+                          fontWeight: 700,
+                          color: "#F5F4F0",
+                        }}
+                      >
+                        {stat.value}
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        fontSize: 22,
-                        fontWeight: 700,
-                        color: "#F5F4F0",
-                      }}
-                    >
-                      {dataPoints && dataPoints.length > 0
-                        ? `${averageMood.toFixed(1)}/10`
-                        : "—"}
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      backgroundColor: "#1A1A24",
-                      border: "1px solid #2A2A3A",
-                      borderRadius: 12,
-                      padding: "16px 20px",
-                      flex: 1,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "#6B6A7E",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Entries
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 22,
-                        fontWeight: 700,
-                        color: "#F5F4F0",
-                      }}
-                    >
-                      {dataPoints?.length ?? 0}
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      backgroundColor: "#1A1A24",
-                      border: "1px solid #2A2A3A",
-                      borderRadius: 12,
-                      padding: "16px 20px",
-                      flex: 1,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "#6B6A7E",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.1em",
-                        marginBottom: 4,
-                      }}
-                    >
-                      Streak
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 22,
-                        fontWeight: 700,
-                        color: "#F5F4F0",
-                      }}
-                    >
-                      {currentStreak === 1 ? "1 day" : `${currentStreak} days`}
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
+                {/* SVG Chart */}
                 <svg
                   width="100%"
                   height={200}
@@ -423,21 +357,107 @@ export default function TrendsPage() {
                         : isHighlighted
                           ? 1
                           : 0.4;
+                    const isActive = tooltip && tooltip.id === dp.id;
                     return (
                       <circle
                         key={dp.id}
                         cx={point.x}
                         cy={point.y}
-                        r="4"
+                        r={isActive ? 6 : 4}
                         fill={getBarColor(dp.mood_score)}
                         stroke="#0F0F14"
                         strokeWidth="2"
                         opacity={opacity}
+                        style={{ cursor: "pointer", transition: "r 0.15s" }}
+                        onMouseEnter={() =>
+                          setTooltip({
+                            id: dp.id,
+                            x: point.x,
+                            y: point.y,
+                            date: formatShortDate(dp.created_at),
+                            mood_label: dp.mood_label,
+                            mood_score: dp.mood_score,
+                            content: dp.content
+                              ? dp.content.slice(0, 80) + "..."
+                              : null,
+                          })
+                        }
+                        onMouseLeave={() => setTooltip(null)}
+                        onClick={() =>
+                          setTooltip(
+                            tooltip?.id === dp.id
+                              ? null
+                              : {
+                                  id: dp.id,
+                                  x: point.x,
+                                  y: point.y,
+                                  date: formatShortDate(dp.created_at),
+                                  mood_label: dp.mood_label,
+                                  mood_score: dp.mood_score,
+                                  content: dp.content
+                                    ? dp.content.slice(0, 80) + "..."
+                                    : null,
+                                },
+                          )
+                        }
                       />
                     );
                   })}
                 </svg>
 
+                {/* Tooltip */}
+                {tooltip && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      top: 80,
+                      left: tooltip.x > 300 ? "auto" : "50%",
+                      right: tooltip.x > 300 ? 24 : "auto",
+                      transform: tooltip.x > 300 ? "none" : "translateX(-50%)",
+                      backgroundColor: "#22222F",
+                      border: "1px solid #2A2A3A",
+                      borderRadius: 10,
+                      padding: "12px 16px",
+                      minWidth: 180,
+                      zIndex: 10,
+                      pointerEvents: "none",
+                      boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        color: "#6B6A7E",
+                        marginBottom: 4,
+                      }}
+                    >
+                      {tooltip.date}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 15,
+                        fontWeight: 600,
+                        color: getBarColor(tooltip.mood_score),
+                        marginBottom: tooltip.content ? 8 : 0,
+                      }}
+                    >
+                      {tooltip.mood_score}/10 · {tooltip.mood_label}
+                    </div>
+                    {tooltip.content && (
+                      <div
+                        style={{
+                          fontSize: 12,
+                          color: "#9B9AAF",
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {tooltip.content}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Date labels */}
                 <div
                   style={{
                     display: "flex",
@@ -446,12 +466,12 @@ export default function TrendsPage() {
                   }}
                 >
                   <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                    {dataPoints && dataPoints.length > 0
+                    {dataPoints.length > 0
                       ? formatShortDate(dataPoints[0].created_at)
                       : "—"}
                   </div>
                   <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                    {dataPoints && dataPoints.length > 0
+                    {dataPoints.length > 0
                       ? formatShortDate(
                           dataPoints[dataPoints.length - 1].created_at,
                         )
@@ -459,6 +479,7 @@ export default function TrendsPage() {
                   </div>
                 </div>
 
+                {/* Legend */}
                 <div
                   style={{
                     display: "flex",
@@ -468,69 +489,29 @@ export default function TrendsPage() {
                     alignItems: "center",
                   }}
                 >
-                  <div
-                    style={{ display: "flex", gap: 8, alignItems: "center" }}
-                  >
+                  {[
+                    { color: "#E05C5C", label: "Distressed (1-3)" },
+                    { color: "#E8A44A", label: "Low (4-5)" },
+                    { color: "#7C6EF5", label: "Okay (6-7)" },
+                    { color: "#4CAF82", label: "Positive (8-10)" },
+                  ].map((item) => (
                     <div
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 999,
-                        backgroundColor: "#E05C5C",
-                      }}
-                    />
-                    <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                      Distressed (1-3)
+                      key={item.label}
+                      style={{ display: "flex", gap: 8, alignItems: "center" }}
+                    >
+                      <div
+                        style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 999,
+                          backgroundColor: item.color,
+                        }}
+                      />
+                      <div style={{ fontSize: 11, color: "#6B6A7E" }}>
+                        {item.label}
+                      </div>
                     </div>
-                  </div>
-
-                  <div
-                    style={{ display: "flex", gap: 8, alignItems: "center" }}
-                  >
-                    <div
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 999,
-                        backgroundColor: "#E8A44A",
-                      }}
-                    />
-                    <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                      Low (4-5)
-                    </div>
-                  </div>
-
-                  <div
-                    style={{ display: "flex", gap: 8, alignItems: "center" }}
-                  >
-                    <div
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 999,
-                        backgroundColor: "#7C6EF5",
-                      }}
-                    />
-                    <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                      Okay (6-7)
-                    </div>
-                  </div>
-
-                  <div
-                    style={{ display: "flex", gap: 8, alignItems: "center" }}
-                  >
-                    <div
-                      style={{
-                        width: 8,
-                        height: 8,
-                        borderRadius: 999,
-                        backgroundColor: "#4CAF82",
-                      }}
-                    />
-                    <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                      Positive (8-10)
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
 
@@ -548,9 +529,7 @@ export default function TrendsPage() {
                   >
                     Detected patterns
                   </div>
-
                   {patterns.map((pattern) => {
-                    // assume pattern.entry_ids is an array of entry ids
                     const isActive =
                       JSON.stringify(
                         (pattern.entry_ids || []).slice().sort(),
@@ -558,7 +537,7 @@ export default function TrendsPage() {
                       JSON.stringify(
                         (highlightedEntryIds || []).slice().sort(),
                       );
-                    const isHovered = Boolean(hovered[`pattern-${pattern.id}`]);
+                    const isHov = Boolean(hovered[`pattern-${pattern.id}`]);
                     return (
                       <div
                         key={pattern.id}
@@ -572,7 +551,7 @@ export default function TrendsPage() {
                         style={{
                           backgroundColor: "#1A1A24",
                           border:
-                            isHovered || isActive
+                            isHov || isActive
                               ? "1px solid #7C6EF5"
                               : "1px solid #2A2A3A",
                           borderRadius: 12,
@@ -582,8 +561,7 @@ export default function TrendsPage() {
                           outline: isActive
                             ? "2px solid rgba(124,110,245,0.15)"
                             : "none",
-                          transition:
-                            "border-color 0.2s, background-color 0.2s",
+                          transition: "border-color 0.2s",
                         }}
                       >
                         <div
@@ -600,7 +578,6 @@ export default function TrendsPage() {
                         >
                           {pattern.category}
                         </div>
-
                         <div
                           style={{
                             color: "#9B9AAF",
@@ -611,7 +588,6 @@ export default function TrendsPage() {
                         >
                           {pattern.description}
                         </div>
-
                         <div
                           style={{
                             color: "#6B6A7E",
@@ -629,7 +605,6 @@ export default function TrendsPage() {
             </>
           )}
 
-          {/* Write CTA */}
           <div style={{ marginTop: 32, textAlign: "center" }}>
             <Link
               href="/journal"
