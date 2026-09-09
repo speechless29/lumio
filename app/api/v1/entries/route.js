@@ -11,6 +11,8 @@ import { analyzeMood, assessSafety } from "../../../../lib/ai/aiService.js";
 
 import { query } from "../../../../lib/db/index.js";
 
+import { refreshPatternsIfDue } from "../../../../lib/patterns/patternService.js";
+
 // --------------------------------------------------
 // Safety response
 // --------------------------------------------------
@@ -73,12 +75,12 @@ export async function GET(request) {
 }
 
 // --------------------------------------------------
-// Process AI
+// Process journal AI
 // --------------------------------------------------
 
-async function processEntryAI(entryId, content, relationshipTags) {
+async function processEntryAI(entryId, userId, content, relationshipTags) {
   try {
-    // Run both AI tasks at the same time.
+    // Safety + emotions run together.
     const [safetyResult, moodResult] = await Promise.all([
       assessSafety(content),
 
@@ -86,13 +88,13 @@ async function processEntryAI(entryId, content, relationshipTags) {
     ]);
 
     // ----------------------------------------------
-    // Save safety result
+    // Safety
     // ----------------------------------------------
 
     await updateEntrySafety(entryId, safetyResult.level);
 
     // ----------------------------------------------
-    // Decide acknowledgment
+    // Acknowledgment
     // ----------------------------------------------
 
     let acknowledgment = moodResult.acknowledgment;
@@ -107,15 +109,15 @@ async function processEntryAI(entryId, content, relationshipTags) {
 
     const threadResult = await query(
       `INSERT INTO threads (
-         user_id,
-         journal_entry_id
-       )
-       SELECT
-         user_id,
-         id
-       FROM journal_entries
-       WHERE id = $1
-       RETURNING id`,
+           user_id,
+           journal_entry_id
+         )
+         SELECT
+           user_id,
+           id
+         FROM journal_entries
+         WHERE id = $1
+         RETURNING id`,
       [entryId],
     );
 
@@ -136,7 +138,7 @@ async function processEntryAI(entryId, content, relationshipTags) {
     );
 
     // ----------------------------------------------
-    // Save emotion result
+    // Save emotion analysis
     // ----------------------------------------------
 
     await updateEntryAIFields(entryId, {
@@ -162,6 +164,30 @@ async function processEntryAI(entryId, content, relationshipTags) {
     console.log(
       `Entry ${entryId} processed: safety=${safetyResult.level}, emotion=${moodResult.mood_label}`,
     );
+
+    // ----------------------------------------------
+    // Refresh recurring patterns
+    // ----------------------------------------------
+
+    try {
+      const patternResult = await refreshPatternsIfDue(userId);
+
+      if (patternResult.refreshed) {
+        console.log(
+          `Patterns refreshed for user ${userId}: ${patternResult.patternCount} active pattern(s)`,
+        );
+      }
+    } catch (patternError) {
+      /*
+       * Pattern failure must NEVER
+       * break journal processing.
+       */
+
+      console.error(
+        `Pattern refresh failed for user ${userId}:`,
+        patternError.message,
+      );
+    }
   } catch (error) {
     console.error(`AI processing failed for entry ${entryId}:`, error.message);
   }
@@ -193,6 +219,7 @@ export async function POST(request) {
               message: "Content must be at least 10 characters.",
             },
           },
+
           {
             status: 400,
           },
@@ -210,6 +237,7 @@ export async function POST(request) {
               message: "Content must be at most 10,000 characters.",
             },
           },
+
           {
             status: 400,
           },
@@ -217,19 +245,20 @@ export async function POST(request) {
       }
 
       // ------------------------------------------
-      // Save immediately
+      // Save journal entry immediately
       // ------------------------------------------
 
       const entry = await createEntry(user.id, content);
 
-      // AI runs after entry is saved.
-      processEntryAI(entry.id, content, user.relationship_tags);
+      // Background analysis.
+      processEntryAI(entry.id, user.id, content, user.relationship_tags);
 
       return Response.json(
         {
           success: true,
           data: entry,
         },
+
         {
           status: 201,
         },
@@ -247,6 +276,7 @@ export async function POST(request) {
             message: error.message,
           },
         },
+
         {
           status: 500,
         },
