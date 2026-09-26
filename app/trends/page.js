@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "../../components/Navbar";
+import CalendarView from "./CalendarView";
 
 export default function TrendsPage() {
   const [tooltip, setTooltip] = useState(null);
@@ -129,35 +130,6 @@ export default function TrendsPage() {
     }
   }
 
-  const chartWidth = 400;
-  const chartHeight = 140;
-  const paddingX = 20;
-  const paddingY = 10;
-
-  const points =
-    dataPoints.length > 0
-      ? dataPoints.map((dp, index) => {
-          const x =
-            dataPoints.length === 1
-              ? chartWidth / 2
-              : paddingX +
-                (index / (dataPoints.length - 1)) * (chartWidth - paddingX * 2);
-          const y =
-            paddingY +
-            (1 - (dp.mood_score - 1) / 9) * (chartHeight - paddingY * 2);
-          return { x, y, dp };
-        })
-      : [];
-
-  const linePath = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-    .join(" ");
-  const linePathPoints = points.map((p) => `${p.x} ${p.y}`).join(" L ");
-  const areaPath =
-    points.length > 0
-      ? `M ${points[0].x} ${chartHeight} L ${linePathPoints} L ${points[points.length - 1].x} ${chartHeight} Z`
-      : "";
-
   return (
     <div style={{ backgroundColor: "#0F0F14", minHeight: "100vh" }}>
       <Navbar activePage="trends" />
@@ -273,7 +245,7 @@ export default function TrendsPage() {
             </div>
           ) : (
             <>
-              {/* Chart */}
+              {/* Stats + calendar */}
               <div
                 style={{
                   backgroundColor: "#1A1A24",
@@ -332,187 +304,7 @@ export default function TrendsPage() {
                   ))}
                 </div>
 
-                {/* SVG Chart */}
-                <svg
-                  width="100%"
-                  height={200}
-                  viewBox="0 0 400 160"
-                  preserveAspectRatio="none"
-                >
-                  <path d={areaPath} fill="#7C6EF5" fillOpacity="0.12" />
-                  <path
-                    d={linePath}
-                    stroke="#7C6EF5"
-                    strokeWidth="2"
-                    fill="none"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  {points.map((point, index) => {
-                    const dp = dataPoints[index];
-                    const isHighlighted = highlightedEntryIds.includes(dp.id);
-                    const opacity =
-                      highlightedEntryIds.length === 0
-                        ? 1
-                        : isHighlighted
-                          ? 1
-                          : 0.4;
-                    const isActive = tooltip && tooltip.id === dp.id;
-                    return (
-                      <circle
-                        key={dp.id}
-                        cx={point.x}
-                        cy={point.y}
-                        r={isActive ? 6 : 4}
-                        fill={getBarColor(dp.mood_score)}
-                        stroke="#0F0F14"
-                        strokeWidth="2"
-                        opacity={opacity}
-                        style={{ cursor: "pointer", transition: "r 0.15s" }}
-                        onMouseEnter={() =>
-                          setTooltip({
-                            id: dp.id,
-                            x: point.x,
-                            y: point.y,
-                            date: formatShortDate(dp.created_at),
-                            mood_label: dp.mood_label,
-                            mood_score: dp.mood_score,
-                            content: dp.content
-                              ? dp.content.slice(0, 80) + "..."
-                              : null,
-                          })
-                        }
-                        onMouseLeave={() => setTooltip(null)}
-                        onClick={() =>
-                          setTooltip(
-                            tooltip?.id === dp.id
-                              ? null
-                              : {
-                                  id: dp.id,
-                                  x: point.x,
-                                  y: point.y,
-                                  date: formatShortDate(dp.created_at),
-                                  mood_label: dp.mood_label,
-                                  mood_score: dp.mood_score,
-                                  content: dp.content
-                                    ? dp.content.slice(0, 80) + "..."
-                                    : null,
-                                },
-                          )
-                        }
-                      />
-                    );
-                  })}
-                </svg>
-
-                {/* Tooltip */}
-                {tooltip && (
-                  <div
-                    style={{
-                      position: "absolute",
-                      top: 80,
-                      left: tooltip.x > 300 ? "auto" : "50%",
-                      right: tooltip.x > 300 ? 24 : "auto",
-                      transform: tooltip.x > 300 ? "none" : "translateX(-50%)",
-                      backgroundColor: "#22222F",
-                      border: "1px solid #2A2A3A",
-                      borderRadius: 10,
-                      padding: "12px 16px",
-                      minWidth: 180,
-                      zIndex: 10,
-                      pointerEvents: "none",
-                      boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color: "#6B6A7E",
-                        marginBottom: 4,
-                      }}
-                    >
-                      {tooltip.date}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: getBarColor(tooltip.mood_score),
-                        marginBottom: tooltip.content ? 8 : 0,
-                      }}
-                    >
-                      {tooltip.mood_score}/10 · {tooltip.mood_label}
-                    </div>
-                    {tooltip.content && (
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "#9B9AAF",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {tooltip.content}
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Date labels */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginTop: 8,
-                  }}
-                >
-                  <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                    {dataPoints.length > 0
-                      ? formatShortDate(dataPoints[0].created_at)
-                      : "—"}
-                  </div>
-                  <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                    {dataPoints.length > 0
-                      ? formatShortDate(
-                          dataPoints[dataPoints.length - 1].created_at,
-                        )
-                      : "—"}
-                  </div>
-                </div>
-
-                {/* Legend */}
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 16,
-                    marginTop: 12,
-                    flexWrap: "wrap",
-                    alignItems: "center",
-                  }}
-                >
-                  {[
-                    { color: "#E05C5C", label: "Distressed (1-3)" },
-                    { color: "#E8A44A", label: "Low (4-5)" },
-                    { color: "#7C6EF5", label: "Okay (6-7)" },
-                    { color: "#4CAF82", label: "Positive (8-10)" },
-                  ].map((item) => (
-                    <div
-                      key={item.label}
-                      style={{ display: "flex", gap: 8, alignItems: "center" }}
-                    >
-                      <div
-                        style={{
-                          width: 8,
-                          height: 8,
-                          borderRadius: 999,
-                          backgroundColor: item.color,
-                        }}
-                      />
-                      <div style={{ fontSize: 11, color: "#6B6A7E" }}>
-                        {item.label}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <CalendarView />
               </div>
 
               {/* Patterns */}

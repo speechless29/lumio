@@ -3,6 +3,7 @@ import { withAuth } from "../../../../lib/middleware/auth.js";
 import {
   createEntry,
   getEntriesByUser,
+  getEntriesByDate,
   updateEntryAIFields,
   updateEntrySafety,
 } from "../../../../lib/db/queries/entries.js";
@@ -40,11 +41,43 @@ function getSafetyAcknowledgment(level) {
 
 // --------------------------------------------------
 // GET /api/v1/entries
+// GET /api/v1/entries?date=YYYY-MM-DD  (used by the trends calendar)
+// GET /api/v1/entries?page=1&limit=10  (existing pagination)
 // --------------------------------------------------
 
 export async function GET(request) {
   return withAuth(request, async (_req, user) => {
     const { searchParams } = new URL(request.url);
+
+    const date = searchParams.get("date");
+
+    if (date) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        return Response.json(
+          {
+            success: false,
+
+            error: {
+              code: "INVALID_DATE",
+
+              message: "date query param must be formatted YYYY-MM-DD.",
+            },
+          },
+
+          {
+            status: 400,
+          },
+        );
+      }
+
+      const entries = await getEntriesByDate(user.id, date);
+
+      return Response.json({
+        success: true,
+
+        data: { entries, date },
+      });
+    }
 
     const page = Number(searchParams.get("page") || 1);
 
