@@ -9,7 +9,9 @@ export default function ReflectPage() {
   const [reflection, setReflection] = useState(null);
   const [hasReflection, setHasReflection] = useState(false);
   const [entriesThisWeek, setEntriesThisWeek] = useState(0);
+  const [processedEntriesThisWeek, setProcessedEntriesThisWeek] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -26,13 +28,21 @@ export default function ReflectPage() {
         });
         const json = await res.json();
 
-        if (res.ok && json?.success) {
-          setReflection(json.data?.reflection ?? null);
-          setHasReflection(Boolean(json.data?.has_reflection));
-          setEntriesThisWeek(json.data?.entries_this_week ?? 0);
+        if (!res.ok || !json?.success) {
+          throw new Error(json?.error?.message || "Unable to load reflection.");
         }
+
+        setReflection(json.data?.reflection ?? null);
+        setHasReflection(Boolean(json.data?.has_reflection));
+        setEntriesThisWeek(json.data?.entries_this_week ?? 0);
+        setProcessedEntriesThisWeek(
+          json.data?.processed_entries_this_week ??
+            json.data?.entries_this_week ??
+            0,
+        );
       } catch (err) {
         console.error("Failed to load reflection", err);
+        setError(err.message || "Unable to load reflection.");
       } finally {
         setLoading(false);
       }
@@ -89,7 +99,11 @@ export default function ReflectPage() {
 
           {loading ? (
             <div style={{ color: "#9B9AAF", fontSize: 15 }}>
-              Generating your reflection...
+              Loading your reflection...
+            </div>
+          ) : error ? (
+            <div role="alert" style={{ color: "#E05C5C", fontSize: 14 }}>
+              {error}
             </div>
           ) : !hasReflection ? (
             <div
@@ -102,11 +116,27 @@ export default function ReflectPage() {
               }}
             >
               <div style={{ color: "#9B9AAF", fontSize: 15, marginBottom: 16 }}>
-                Your weekly reflection will be ready after 5 entries.
+                Your weekly reflection needs 5 processed entries this week.
               </div>
               <div style={{ color: "#6B6A7E", fontSize: 13, marginBottom: 24 }}>
-                {entriesThisWeek} of 5 entries this week
+                {processedEntriesThisWeek} of 5 processed entries this week
               </div>
+              {entriesThisWeek > processedEntriesThisWeek && (
+                <div
+                  style={{
+                    color: "#9B9AAF",
+                    fontSize: 12,
+                    marginTop: -12,
+                    marginBottom: 20,
+                  }}
+                >
+                  {entriesThisWeek - processedEntriesThisWeek}{" "}
+                  {entriesThisWeek - processedEntriesThisWeek === 1
+                    ? "entry is"
+                    : "entries are"}{" "}
+                  still being analyzed. The count starts over each Sunday.
+                </div>
+              )}
 
               <div
                 style={{
@@ -120,7 +150,7 @@ export default function ReflectPage() {
               >
                 <div
                   style={{
-                    width: `${Math.min((entriesThisWeek / 5) * 100, 100)}%`,
+                    width: `${Math.min((processedEntriesThisWeek / 5) * 100, 100)}%`,
                     maxWidth: "100%",
                     height: 4,
                     backgroundColor: "#7C6EF5",
@@ -129,17 +159,6 @@ export default function ReflectPage() {
                   }}
                 />
               </div>
-
-              <Link
-                href="/journal"
-                style={{
-                  color: "#7C6EF5",
-                  fontSize: 14,
-                  textDecoration: "none",
-                }}
-              >
-                Write today&apos;s entry →
-              </Link>
             </div>
           ) : (
             <>
@@ -246,18 +265,20 @@ export default function ReflectPage() {
             </>
           )}
 
-          <div style={{ marginTop: 32, textAlign: "center" }}>
-            <Link
-              href="/journal"
-              style={{
-                color: "#7C6EF5",
-                fontSize: 14,
-                textDecoration: "none",
-              }}
-            >
-              Write today&apos;s entry →
-            </Link>
-          </div>
+          {!hasReflection && !loading && !error && (
+            <div style={{ marginTop: 32, textAlign: "center" }}>
+              <Link
+                href="/journal"
+                style={{
+                  color: "#7C6EF5",
+                  fontSize: 14,
+                  textDecoration: "none",
+                }}
+              >
+                Write today&apos;s entry →
+              </Link>
+            </div>
+          )}
         </div>
       </main>
     </div>

@@ -5,6 +5,7 @@ import {
   createWeeklyReflection,
   getEntriesForWeek,
   getWeeklyReflection,
+  getWeeklyEntryCounts,
 } from "../../../../lib/db/queries/reflections.js";
 
 export async function GET(request) {
@@ -19,7 +20,10 @@ export async function GET(request) {
     const weekStart = sunday.toISOString().split("T")[0];
     const weekEnd = nextSunday.toISOString().split("T")[0];
 
-    const existingReflection = await getWeeklyReflection(user.id, weekStart);
+    const [existingReflection, counts] = await Promise.all([
+      getWeeklyReflection(user.id, weekStart),
+      getWeeklyEntryCounts(user.id, weekStart, weekEnd),
+    ]);
 
     if (existingReflection) {
       return Response.json({
@@ -27,7 +31,8 @@ export async function GET(request) {
         data: {
           reflection: existingReflection,
           has_reflection: true,
-          entries_this_week: existingReflection.entry_ids?.length ?? 0,
+          entries_this_week: counts.total_entries,
+          processed_entries_this_week: counts.processed_entries,
           entries_needed: 5,
         },
       });
@@ -41,14 +46,34 @@ export async function GET(request) {
         data: {
           reflection: null,
           has_reflection: false,
-          entries_this_week: entries.length,
+          entries_this_week: counts.total_entries,
+          processed_entries_this_week: counts.processed_entries,
           entries_needed: 5,
         },
       });
     }
 
-    const { system, user: userPrompt } = buildReflectionPrompt(entries);
-    const aiResponse = await callAI(system, userPrompt);
+    let aiResponse;
+    try {
+      const { system, user: userPrompt } = buildReflectionPrompt(entries);
+      aiResponse = await callAI(system, userPrompt);
+    } catch (error) {
+      console.error(
+        `Weekly reflection generation failed for user ${user.id}:`,
+        error,
+      );
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "REFLECTION_GENERATION_FAILED",
+            message:
+              "Could not generate this week's reflection. Please try again.",
+          },
+        },
+        { status: 503 },
+      );
+    }
 
     let parsed;
     try {
@@ -63,7 +88,8 @@ export async function GET(request) {
           success: false,
           error: {
             code: "REFLECTION_PARSE_FAILED",
-            message: "Failed to parse reflection response.",
+            message:
+              "The reflection service returned an invalid response. Please try again.",
           },
         },
         { status: 500 },
@@ -79,12 +105,29 @@ export async function GET(request) {
       entries.map((entry) => entry.id),
     );
 
+    const reflection =
+      created || (await getWeeklyReflection(user.id, weekStart));
+
+    if (!reflection) {
+      return Response.json(
+        {
+          success: false,
+          error: {
+            code: "REFLECTION_SAVE_FAILED",
+            message: "Could not save this week's reflection. Please try again.",
+          },
+        },
+        { status: 500 },
+      );
+    }
+
     return Response.json({
       success: true,
       data: {
-        reflection: created,
+        reflection,
         has_reflection: true,
-        entries_this_week: entries.length,
+        entries_this_week: counts.total_entries,
+        processed_entries_this_week: counts.processed_entries,
         entries_needed: 5,
       },
     });
