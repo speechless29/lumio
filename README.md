@@ -4,6 +4,20 @@ Lumio is a private journaling app that analyzes emotional language in journal en
 
 This README describes the implementation in this repository. It does not claim that the configured database or external AI service is currently reachable in a deployed environment.
 
+| Journal — emotion confirmation                                | Trends — calendar with a day selected           |
+| ------------------------------------------------------------- | ----------------------------------------------- |
+| ![Journal emotion confirmation](docs/screenshots/journal.png) | ![Trends calendar](docs/screenshots/trends.png) |
+
+| Chat thread                               | Weekly reflection                                  |
+| ----------------------------------------- | -------------------------------------------------- |
+| ![Chat thread](docs/screenshots/chat.png) | ![Weekly reflection](docs/screenshots/reflect.png) |
+
+| Recurring patterns                                   | Onboarding tags                                     |
+| ---------------------------------------------------- | --------------------------------------------------- |
+| ![Recurring patterns](docs/screenshots/patterns.png) | ![Onboarding tags](docs/screenshots/onboarding.png) |
+
+_(Capture states and file-naming notes are in the [Screenshots](#screenshots) section near the end of this README.)_
+
 ## What the app does
 
 - **Journal:** Save entries, then asynchronously analyze mood, emotions, relationship context, situational stressors, and safety. The journal page polls for the completed analysis and lets the writer confirm or edit the detected emotions.
@@ -30,7 +44,7 @@ The prompt asks the model to ground emotion labels in entry text rather than ass
 
 ### 2. Confirm or edit emotions
 
-After the latest entry's processing finishes, the journal page displays the detected emotions and asks, “Does this feel right?” The writer can confirm the detected primary and secondary emotions or edit the set to choose one to three labels from the same vocabulary. The API stores the chosen labels and a `confirmed` or `edited` feedback value. The original AI fields remain stored separately. When user emotions exist, the journal and pattern detector prefer them for display or pattern summaries.
+After the latest entry's processing finishes, the journal page displays the detected emotions and asks, "Does this feel right?" The writer can confirm the detected primary and secondary emotions or edit the set to choose one to three labels from the same vocabulary. The API stores the chosen labels and a `confirmed` or `edited` feedback value. The original AI fields remain stored separately. When user emotions exist, the journal and pattern detector prefer them for display or pattern summaries.
 
 ### 3. Continue in chat
 
@@ -146,7 +160,7 @@ Unless noted otherwise, successful application endpoints return JSON with `succe
 
 ## Current implementation status
 
-“Implemented” describes code present in this repository. External service credentials, database contents, and deployed production behavior have not been verified as part of this README audit.
+"Implemented" describes code present in this repository. External service credentials, database contents, and deployed production behavior have not been verified as part of this README audit.
 
 | Feature                               | Status                                                                                                            |
 | ------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
@@ -192,7 +206,7 @@ Available package scripts are `dev`, `build`, `start`, and `lint`. No migration 
 - The calendar averages multiple scored entries on the same stored date into one dot; it does not show individual score dots.
 - `created_at`, `ai_processed_at`, and `emotion_feedback_at` are `TIMESTAMP` without time zone. Calendar grouping uses the stored database date while month boundaries are constructed from UTC JavaScript dates; no explicit user-time-zone policy is implemented, so entries near midnight may be grouped differently than a user's local calendar expects.
 - The Trends page requires five processed entries before it renders the calendar, even if earlier calendar dates have scores.
-- Pattern cards currently include the instruction “Tap to highlight on chart,” but no chart is rendered in the current Trends page. The card's active styling changes; chart highlighting does not occur.
+- Pattern cards currently include the instruction "Tap to highlight on chart," but no chart is rendered in the current Trends page. The card's active styling changes; chart highlighting does not occur.
 - Pattern refreshes happen only after each fifth processed entry. A newly eligible pattern may not be recomputed until the next milestone.
 - Google auth, server-side logout, and relationship-tag persistence are placeholders, not working end-to-end features.
 - Journal analysis is launched as in-process background work after returning the create response. There is no durable job queue in this repository; process termination or AI failure can leave an entry unprocessed.
@@ -254,6 +268,8 @@ lumio/
 │   ├── screenshots/
 │   │   ├── chat.png
 │   │   ├── journal.png
+│   │   ├── onboarding.png
+│   │   ├── patterns.png
 │   │   ├── reflect.png
 │   │   └── trends.png
 │   ├── ai-architecture.md
@@ -308,11 +324,11 @@ lumio/
 
 ## Screenshots
 
-Four screenshot files currently exist in `docs/screenshots/`, but their displayed states have not been verified against the current UI. This README does not embed or claim them as current captures. Please replace those captures with the states below and place the files in `docs/screenshots/`. Also capture the recurring-patterns and onboarding states listed below; name those files when you add them. I will add the screenshots table and image references only after you confirm the captures are in place.
+The gallery at the top of this README is embedded directly from `docs/screenshots/` — once a file exists at the matching path, GitHub renders it inline automatically. Until then, that cell shows a broken-image icon. Capture each one in this state before dropping the file in at the matching path:
 
-1. **Journal emotion confirmation** (`journal.png`): Sign in, save an entry of at least 10 characters, wait for AI processing to finish, and capture the latest-entry panel while “Does this feel right?” and the Yes/Edit actions are visible. Do not confirm or edit before capturing.
-2. **Trends calendar with selected day** (`trends.png`): Use an account with at least five processed entries overall. In the visible month, have scored entries on multiple dates with a range of averages so colored dots can be seen. Select a date with at least one entry so the day-detail panel displays its stored entry text. Ideally include red, amber, and green dots if the data permits.
-3. **Chat thread** (`chat.png`): Open the thread for a processed journal entry, with the original entry context and at least one user/assistant follow-up exchange visible.
-4. **Weekly reflection** (`reflect.png`): Use an account with at least five processed entries in the current Sunday-to-Sunday week. Load the saved reflection so its text and high/low mood-arc scores are visible.
-5. **Recurring patterns:** Use an account with at least five processed entries and a stored active pattern supported by at least three entries sharing a relationship or situational category. Capture the pattern description on Trends; the current app does not render the chart mentioned by the card's old highlight instruction.
-6. **Onboarding tags:** Capture the onboarding page with several relationship options selected and the Continue button enabled. This is a UI-state capture only; tag persistence is not implemented yet.
+1. **`journal.png`** — Sign in, save an entry of at least 10 characters, wait for AI processing to finish, and capture the latest-entry panel while "Does this feel right?" and the Yes/Edit actions are visible. Do not confirm or edit before capturing.
+2. **`trends.png`** — Use an account with at least five processed entries overall. In the visible month, have scored entries on multiple dates with a range of averages so colored dots can be seen. Select a date with at least one entry so the day-detail panel displays its stored entry text. Ideally include red, amber, and green dots if the data permits.
+3. **`chat.png`** — Open the thread for a processed journal entry, with the original entry context and at least one user/assistant follow-up exchange visible.
+4. **`reflect.png`** — Use an account with at least five processed entries in the current Sunday-to-Sunday week. Load the saved reflection so its text and high/low mood-arc scores are visible.
+5. **`patterns.png`** — Use an account with at least five processed entries and a stored active pattern supported by at least three entries sharing a relationship or situational category. Capture the pattern description on Trends; the current app does not render the chart mentioned by the card's old highlight instruction.
+6. **`onboarding.png`** — Capture the onboarding page with several relationship options selected and the Continue button enabled. This is a UI-state capture only; tag persistence is not implemented yet.
